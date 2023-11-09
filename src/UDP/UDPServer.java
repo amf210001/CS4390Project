@@ -22,25 +22,30 @@ public class UDPServer implements Runnable {
                 }
             }
       }
-    public void run(){
-        System.out.println("Serving client from port " + receivePacket.getPort());
-        byte[] sendData = new byte[1024];
+    public void run() {
         String sentence = new String(receivePacket.getData());
+        //System.out.println(sentence);
+        if (!sentence.equalsIgnoreCase("close")) {
+            System.out.println("Serving client from port " + receivePacket.getPort());
+            byte[] sendData = new byte[1024];
 
-        InetAddress IPAddress = receivePacket.getAddress();
+            InetAddress IPAddress = receivePacket.getAddress();
 
-        int port = receivePacket.getPort();
+            int port = receivePacket.getPort();
 
-        String capitalizedSentence = sentence.toUpperCase();
+            String capitalizedSentence = sentence.toUpperCase();
 
-        sendData = capitalizedSentence.getBytes();
+            sendData = capitalizedSentence.getBytes();
 
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
 
-        try {
-            serverSocket.send(sendPacket);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            try {
+                serverSocket.send(sendPacket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            System.out.println("Client from port " + receivePacket.getPort() + " has closed their connection.");
         }
     }
 }
