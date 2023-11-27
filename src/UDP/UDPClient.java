@@ -42,7 +42,8 @@ public class UDPClient {
 		  // If the first message is "close", the connection is closed and no name is given
 		  if(firstMsg == true) {
 			try {
-				sendData = "this is the first msg".getBytes("UTF-8");
+				String firstsentence = "This is the first msg " + sentence;
+				sendData = firstsentence.getBytes("UTF-8");
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException(e);
 			}
