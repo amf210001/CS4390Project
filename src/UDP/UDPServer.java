@@ -30,49 +30,49 @@ public class UDPServer implements Runnable {
       }
     public void run() {
         // Decodes packet received from client and removes any null characters left behind from decoding 
-	String sentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
-	System.out.println("Print received packet " + sentence);	
-	sentence = sentence.replaceAll("\0", "");
+        String sentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
+        System.out.println("Print received packet " + sentence);
+        sentence = sentence.replaceAll("\0", "");
 
-	if (!sentence.equalsIgnoreCase("close")) {
-        System.out.println("Serving client from port " + receivePacket.getPort());
-        byte[] sendData = new byte[1024];
-	    String returnMsg; 
-        InetAddress IPAddress = receivePacket.getAddress();
+        if (!sentence.equalsIgnoreCase("close")) {
+            System.out.println("Serving client from port " + receivePacket.getPort());
+            byte[] sendData = new byte[1024];
+            String returnMsg;
+            InetAddress IPAddress = receivePacket.getAddress();
 
-        int port = receivePacket.getPort();
-	    
-	    // First message is an acknowledgement, the following messages are calculation results
+            int port = receivePacket.getPort();
 
-		if (sentence.trim().startsWith("This is the first msg")) {
-			String clientName = sentence.substring("This is the first msg".length()).trim();
-			returnMsg = "CONNECTION ACKNOWLEDGED FOR " + clientName + "\nEnter a math equation using numbers and only these characters (+, -, /, *, ^, (, ), ) \nOR 'close' to close the connection";
-		} else {
-			// Add your code here for the else case
-			returnMsg = evaluate(sentence);
-			//returnMsg = "Invalid input. Please enter a valid math equation or 'close' to close the connection.";
-		}
+            // First message is an acknowledgement, the following messages are calculation results
 
-	    
-	    // Sends the result after the first message
-	    if (!sentence.equalsIgnoreCase("this is the first msg")) {
-	   	 try{
-            		sendData = returnMsg.getBytes("UTF-8");
-	    	} catch (UnsupportedEncodingException e) {
-	    		throw new RuntimeException(e);
-	    	}
+            if (sentence.trim().startsWith("This is the first msg")) {
+                String clientName = sentence.substring("This is the first msg".length()).trim();
+                returnMsg = "CONNECTION ACKNOWLEDGED FOR " + clientName + "\nEnter a math equation using numbers and only these characters (+, -, /, *, ^, (, ), ) \nOR 'close' to close the connection";
+            } else {
+                // Add your code here for the else case
+                returnMsg = evaluate(sentence);
+                //returnMsg = "Invalid input. Please enter a valid math equation or 'close' to close the connection.";
+            }
 
-           	 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
 
-            	try {
-           	     serverSocket.send(sendPacket);
-            	} catch (IOException e) {
-                	throw new RuntimeException(e);
-            	}
-	    }
+            // Sends the result after the first message
+            if (!sentence.equalsIgnoreCase("this is the first msg")) {
+             try{
+                        sendData = returnMsg.getBytes("UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException(e);
+                }
+
+                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+
+                    try {
+                     serverSocket.send(sendPacket);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+            }
 
         } else {
-            System.out.println("Client from port " + receivePacket.getPort() + " has closed their connection.");
+                System.out.println("Client from port " + receivePacket.getPort() + " has closed their connection.");
         }
     }
 
