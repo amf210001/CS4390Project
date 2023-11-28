@@ -28,63 +28,61 @@ public class UDPServer implements Runnable {
                 }
             }
       }
+    // Runnable interface method
     public void run() {
         // Decodes packet received from client and removes any null characters left behind from decoding 
         String sentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
         System.out.println("Print received packet " + sentence);
         sentence = sentence.replaceAll("\0", "");
 
+        // if the message is not 'close': intialize variables, else: close connection
         if (!sentence.equalsIgnoreCase("close")) {
             System.out.println("Serving client from port " + receivePacket.getPort());
             byte[] sendData = new byte[1024];
             String returnMsg;
             InetAddress IPAddress = receivePacket.getAddress();
-
             int port = receivePacket.getPort();
 
-            // First message is an acknowledgement, the following messages are calculation results
-
+            //  First message is an acknowledgement, the following messages are calculation results
             if (sentence.trim().startsWith("This is the first msg")) {
                 String clientName = sentence.substring("This is the first msg".length()).trim();
-                returnMsg = "CONNECTION ACKNOWLEDGED FOR " + clientName + "\nEnter a math equation using numbers and only these characters (+, -, /, *, ^, (, ), ) \nOR 'close' to close the connection";
+                returnMsg = "CONNECTION ACKNOWLEDGED FOR " + clientName + "\nEnter a math equation using numbers and only these characters (+, -, /, *, (, ), ) \nOR 'close' to close the connection";
             } else {
-                // Add your code here for the else case
                 returnMsg = evaluate(sentence);
                 //returnMsg = "Invalid input. Please enter a valid math equation or 'close' to close the connection.";
             }
 
 
-            // Sends the result after the first message
-            if (!sentence.equalsIgnoreCase("this is the first msg")) {
-             try{
-                        sendData = returnMsg.getBytes("UTF-8");
+            // Send the response
+            try{
+                sendData = returnMsg.getBytes("UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    throw new RuntimeException(e);
+                throw new RuntimeException(e);
                 }
 
-                 DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-
-                    try {
-                     serverSocket.send(sendPacket);
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-            }
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            try {
+                serverSocket.send(sendPacket);
+                }   catch (IOException e) {
+                throw new RuntimeException(e);
+                }
 
         } else {
                 System.out.println("Client from port " + receivePacket.getPort() + " has closed their connection.");
         }
     }
 
+    //Response helper method for an expression
     public static String evaluate(String expression) {
         try {
             double result = evaluateExpression(expression);
             return "Result: " + result;
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return "Error: " + e.getMessage() + "; Please send a new expression using only the allowed characters!";
         }
     }
 
+    //evaluate the math expression
     private static double evaluateExpression(String expression) {
         char[] tokens = expression.toCharArray();
 
@@ -124,6 +122,8 @@ public class UDPServer implements Runnable {
         return values.pop();
     }
 
+    //Helper methods
+
     private static boolean hasPrecedence(char op1, char op2) {
         return (op2 != '(' && op2 != ')' && getPrecedence(op1) <= getPrecedence(op2));
     }
@@ -153,88 +153,4 @@ public class UDPServer implements Runnable {
         }
         return 0;
     }
-
 }
-
-
-// 	/**
-// 	 * @param equation
-// 	 * @return
-// 	 */
-// 	public double solve(String equation){
-// 		Expression expression = Expression.parse(equation);
-
-// 		double result = expression.evaluate();
-
-// 		return result;
-
-// 	}
-
-
-
-//     private String DijkstraTwoStack(String equation) {
-//     	// Ignores string values that contain letters
-// 	// Server will send an empty response for inputs with letters
-// 	  if(!equation.matches("[A-Za-z]+")) {
-// 		// Splits the string based on spaces and adds each element to a queue
-// 		String [] str = equation.split("\\s+");
-// 		Queue<String> queue = new LinkedList<>();
-// 		queue.addAll(Arrays.asList(str));
- 	
-// 		Stack<String> operators = new Stack<>();
-// 		Stack<Double> operands = new Stack<>();
-		
-// 		// Goes through the queue and pushes operands/operators to each stack
-// 		while(!queue.isEmpty()) {
-// 			String token = queue.poll();
-// 			switch (token) {
-// 				case "(":
-// 					break;
-// 				case "+":	case "-":	case "/":	case "*":	case "^":
-// 					operators.push(token);
-// 					break;
-// 				case ")":
-// 					operands.push(evaluate(operators, operands));
-// 					break;
-// 				default:
-// 					operands.push(Double.parseDouble(token));
-// 					break;
-// 			}
-
-// 		}
-// 		String returnVal = evaluate(operators,operands) + "";
-// 		return returnVal;
-//     	}
-// 	return "Please enter an equation!";
-//     }
-
-//     private Double evaluate(Stack<String> operators, Stack<Double> operands) { 
-//     	double val = operands.pop();
-// 	// Performs the operations on two operands and returns the result
-// 	if(!operators.empty()){
-// 		String op = operators.pop();
-// 		switch (op) {
-// 			case "+":
-// 				val = operands.pop() + val;
-// 				break;
-// 			case "-":
-// 				val = operands.pop() - val;
-// 				break;
-// 			case "/":
-// 				val = operands.pop() / val;
-// 				break;
-// 			case "*":
-// 				val = operands.pop() * val;
-// 				break;
-// 			case "^":
-// 				val = Math.pow(operands.pop(), val);	
-// 				break;
-// 			default:
-// 				break;
-// 		}
-// 	}
-//     	return val;
-//     }
-
-
-// }

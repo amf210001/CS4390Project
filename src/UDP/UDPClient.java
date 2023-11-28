@@ -62,7 +62,6 @@ public class UDPClient {
 
 			  System.out.println("FROM SERVER:" + modifiedSentence);
 		  } else {
-
 			  // Bytes are encoded and decoded using UTF-8
 			  sendData = sentence.getBytes("UTF-8");
 
@@ -72,12 +71,10 @@ public class UDPClient {
 			  if (!sentence.equalsIgnoreCase("close")) {
 				  // Receives and prints message from server
 				  DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-
 				  clientSocket.receive(receivePacket);
-
 				  String modifiedSentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
-
 				  System.out.println("FROM SERVER:" + modifiedSentence);
+				  
 			  } else {
 				  // Gets and returns the client's connection time and when they connected to the server
 				  elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
