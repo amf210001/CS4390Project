@@ -1,6 +1,5 @@
 import java.io.*; 
-import java.net.*; 
-import java.util.Timer;  
+import java.net.*;  
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.nio.charset.StandardCharsets;
@@ -28,67 +27,73 @@ public class UDPClient {
       String clientName = "";
       	  
 	  while(connection) {
-		  byte[] sendData = new byte[1024];
-		  byte[] receiveData = new byte[1024];
+		byte[] sendData = new byte[1024];
+		byte[] receiveData = new byte[1024];
 
-		  // Starts connection by entering name
-		  if (firstMsg == true) {
-			  System.out.print("Enter a name for the client: ");
-		  }
+		// Starts connection by entering name
+		if (firstMsg == true) {
+			System.out.print("Enter a name for the client: ");
+		}
 
-		  String sentence = inFromUser.readLine();
+		String sentence = inFromUser.readLine();
 
-		  // Sends the client's first message as the client's name
-		  // If the first message is "close", the connection is closed and no name is given
-		  if (firstMsg == true) {
-			  try {
-				  String firstsentence = "This is the first msg " + sentence;
-				  sendData = firstsentence.getBytes("UTF-8");
-			  } catch (UnsupportedEncodingException e) {
-				  throw new RuntimeException(e);
-			  }
-			  DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
-			  clientSocket.send(sendPacket);
+		// Sends the client's first message as the client's name
+		if (firstMsg == true) {
+			if (sentence.equalsIgnoreCase(""))
+				sentence = "Null";
 
-			  clientName = sentence;
-			  if (clientName.equalsIgnoreCase("close"))
-				  clientName = "** no name given **";
-			  firstMsg = false;
-			  DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+			try {
+				String firstsentence = "This is the first msg " + sentence;
+				sendData = firstsentence.getBytes("UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(e);
+			}
 
-			  clientSocket.receive(receivePacket);
+			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
+			clientSocket.send(sendPacket);
+			  
+			clientName = sentence;
+			firstMsg = false;
 
-			  String modifiedSentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
+			// Receives and prints message from server
+			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+			clientSocket.receive(receivePacket);
+			String modifiedSentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
 
-			  System.out.println("FROM SERVER:" + modifiedSentence);
-		  } else {
-			  // Bytes are encoded and decoded using UTF-8
-			  sendData = sentence.getBytes("UTF-8");
+			System.out.println("FROM SERVER:" + modifiedSentence);
+		} else { // if not the first message
 
-			  DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
-			  clientSocket.send(sendPacket);
-
-			  if (!sentence.equalsIgnoreCase("close")) {
+			// if not close
+			if (!sentence.toLowerCase().startsWith("close")) {
+				sendData = sentence.getBytes("UTF-8");
+			  	DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
+			  	clientSocket.send(sendPacket);
 				  // Receives and prints message from server
 				  DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 				  clientSocket.receive(receivePacket);
 				  String modifiedSentence = new String(receivePacket.getData(), StandardCharsets.UTF_8);
 				  System.out.println("FROM SERVER:" + modifiedSentence);
 				  
-			  } else {
-				  // Gets and returns the client's connection time and when they connected to the server
-				  elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
-				  elapsedMinutes = elapsedSeconds / 60;
-				  sentence = "Client " + clientName + " using the client port number " + sendPacket.getPort() + " has disconnected \nConnection began at "
+			} else { //if close
+				// Calculate connection time
+				elapsedSeconds = (System.currentTimeMillis() - startTime) / 1000;
+				elapsedMinutes = elapsedSeconds / 60;
+				// Send close message
+				sentence = sentence + " " + clientName + "; Connection Duration: " + elapsedMinutes + " minutes and " + elapsedSeconds + " seconds\n";
+				sendData = sentence.getBytes("UTF-8");
+			    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
+			    clientSocket.send(sendPacket);
+
+				// Print closing connection details
+				sentence = "Client " + clientName + " using the client port number " + sendPacket.getPort() + " has disconnected \nConnection began at "
 						  + dtf.format(connectionStart) + "\nConnection lasted for " + elapsedMinutes + " minutes and " + elapsedSeconds + " seconds\n";
-				  sendData = sentence.getBytes("UTF-8");
-				  sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
+				sendData = sentence.getBytes("UTF-8");
+				sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 9877);
+				System.out.println(sentence);
 
-				  System.out.println(sentence);
-
-				  // Client connection is closed
-				  clientSocket.close();
-				  connection = false;
+				// Client connection is closed
+				clientSocket.close();
+				connection = false;
 			  }
 		  }
 	  }
