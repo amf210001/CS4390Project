@@ -3,15 +3,12 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-//import java.util.HashMap;
-//import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class UDPServer implements Runnable {
     private DatagramPacket receivePacket;
     private DatagramSocket serverSocket;
-    //private Map<Integer, String> portToClientName = new HashMap<>();
     private String clientName;
 
     public UDPServer(DatagramPacket receivePacket, DatagramSocket serverSocket) {
@@ -153,5 +150,4 @@ public class UDPServer implements Runnable {
             e.printStackTrace();
         }
     }
-    
 }
