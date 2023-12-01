@@ -143,7 +143,6 @@ public class UDPServer implements Runnable {
     //Find the client's log file and log connection duration
     private void logConnectionDuration(String clientName, String duration) {
         String logFileName = "logs/" + clientName + "_log.txt";
-        System.out.println(clientName);
         try (PrintWriter writer = new PrintWriter(new FileWriter(logFileName, true))) {
             writer.println(duration + "\n");
         } catch (IOException e) {
